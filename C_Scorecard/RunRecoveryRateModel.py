@@ -9,11 +9,13 @@ from datetime import datetime
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
 from sklearn import cross_validation, metrics
-from common.const import *
+
 from featureEngineering.featureEncoding.categorical_feature_encoding import CategoricalFeatureEncoding
 from featureEngineering.featureEncoding.numeric_feature_encoding import NumericFeatureEncoding
 from modeling.modelTrain.regression_model import RegressionModel
 from modeling.parameterAdjust.parameter_adjust import ParameterAdjust
+
+from  settings import  *
 
 if __name__ == '__main__':
     print('--还款率预测模型开始执行--')
@@ -21,11 +23,13 @@ if __name__ == '__main__':
     第一步：文件准备
     '''
     #读取源数据，FOLD_OF_DATA保存原始数据路径，SRC_FILE_NAME保存数据文件名称
-    mydata = pd.read_csv(const.FOLD_OF_DATA + const.SRC_FILE_NAME, header=0)
+    mydata = pd.read_csv(FOLD_OF_DATA + SRC_FILE_NAME, header=0)
+
     #催收还款率等于催收金额/（所欠本息+催收费用）。其中催收费用以支出形式表示
     #催收还款率作为样本的label
     mydata['rec_rate'] = mydata.apply(
         lambda x: x.LP_NonPrincipalRecoverypayments / (x.AmountDelinquent + x.LP_CollectionFees), axis=1)
+
     #对样本label进行处理，当label值大于1时，设置label值为1
     mydata['rec_rate'] = mydata['rec_rate'].map(lambda x: min(x, 1))
 
@@ -37,10 +41,10 @@ if __name__ == '__main__':
     第二步：数据预处理
     '''
     #类别型特征
-    categoricalFeatures = const.CATEGORICAL_FEATURES
+    categoricalFeatures = CATEGORICAL_FEATURES
     print(categoricalFeatures)
     #数值型特征
-    numFeatures = const.NUM_FEATURES
+    numFeatures = NUM_FEATURES
     print(numFeatures)
 
     '''
@@ -68,8 +72,11 @@ if __name__ == '__main__':
     '''
     #X保存样本特征，y保存样本label
     X, y = trainData[numFeatures2], trainData['rec_rate']
+
     #调参
-    best_n_estimators, best_max_depth, best_min_samples_leaf, best_min_samples_split, best_max_features = ParameterAdjust.gridSearchCVParameterAdjust(X, y, numFeatures2)
+    best_n_estimators, best_max_depth, best_min_samples_leaf,\
+    best_min_samples_split, best_max_features = ParameterAdjust.gridSearchCVParameterAdjust(X, y, numFeatures2)
+
     #模型训练
     cls = RegressionModel.RandomForestRegressorTrain(best_n_estimators,
                                                      best_max_depth,
