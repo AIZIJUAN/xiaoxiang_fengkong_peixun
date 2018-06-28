@@ -1,0 +1,18 @@
+还款率预测模型：预测经催收后，最终催收回的欠款的比率。
+还款率预测模型常用指标：
+1、逾期天数（day past due，DPD）
+2、历史还款率信息
+3、个人信息（性别、年龄、收入、工作等等）
+4、DBR（debt burden ratio）
+5、联系人关系（是否是夫妻、子女、同事、朋友）
+
+还款率预测模型建立过程：
+1、读取原始数据文件，并根据现有特征计算各样本的还款率作为label，将样本6:4分成训练样本和测试样本
+2、特征工程：对类别型变量用目标变量的均值进行填充，对数值型变量进行缺失值填充
+3、对模型关键参数进行调参，如树的个数、树的最大深度、内部节点最少样本数、叶节点最少样本数、特征个数等
+4、模型训练
+
+模型运行主要中间参数：
+类别型特征：['CreditGrade', 'Term', 'BorrowerState', 'Occupation', 'EmploymentStatus', 'IsBorrowerHomeowner', 'CurrentlyInGroup', 'IncomeVerifiable']
+数值型特征：['BorrowerAPR', 'BorrowerRate', 'LenderYield', 'ProsperRating (numeric)', 'ProsperScore', 'ListingCategory (numeric)', 'EmploymentStatusDuration', 'CurrentCreditLines', 'OpenCreditLines', 'TotalCreditLinespast7years', 'CreditScoreRangeLower', 'OpenRevolvingAccounts', 'OpenRevolvingMonthlyPayment', 'InquiriesLast6Months', 'TotalInquiries', 'CurrentDelinquencies', 'DelinquenciesLast7Years', 'PublicRecordsLast10Years', 'PublicRecordsLast12Months', 'BankcardUtilization', 'TradesNeverDelinquent (percentage)', 'TradesOpenedLast6Months', 'DebtToIncomeRatio', 'LoanFirstDefaultedCycleNumber', 'LoanMonthsSinceOrigination', 'PercentFunded', 'Recommendations', 'InvestmentFromFriendsCount', 'Investors']
+(best_n_estimators, best_max_depth, best_min_samples_leaf, best_min_samples_split, best_max_features) = (40, 8, 7, 50, 11)
