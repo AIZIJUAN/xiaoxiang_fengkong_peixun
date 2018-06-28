@@ -14,9 +14,6 @@ from sklearn import cross_validation, metrics
 对类别型特征进行特征处理
 """
 class CategoricalFeatureEncoding:
-    def __init__(self, features, data):
-        self.categoricalFeatures = features
-        self.sampleData = data
 
     # 对类型字段进行缺失值填充
     #入参：x-原始值
@@ -40,18 +37,25 @@ class CategoricalFeatureEncoding:
         for var in categoricalFeatures:
             #对类别型特征进行缺失值填充
             sampleData[var] = sampleData[var].map(CategoricalFeatureEncoding.MakeupMissingCategorical)
+
             #关于var特征，对rec_rate进行group by操作，计算当前特征每个取值对应的rec_rate的均值
             avgTarget = sampleData.groupby([var])['rec_rate'].mean()
+
             #将avgTarget转换成字典形式，key为特征取值，value为当前取值对应的rec_rate的均值
             avgTarget = avgTarget.to_dict()
+
             #根据当前特征生成新特征
             newVar = var + '_encoded'
-            #给新特征赋值
+
+            #转换成每个特征值对应的rec_rate 均值，作为新特征
             sampleData[newVar] = sampleData[var].map(avgTarget)
+
             #将newVar加入到encodedFeatures中
             encodedFeatures.append(newVar)
+
             #encodedDict中加入var以及对应的字典类型的avgTarget
             encodedDict[var] = avgTarget
+
         return sampleData, encodedFeatures
 
 if __name__ == '__main__':

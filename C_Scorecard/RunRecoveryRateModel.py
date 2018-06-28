@@ -44,21 +44,21 @@ if __name__ == '__main__':
     categoricalFeatures = CATEGORICAL_FEATURES
     print(categoricalFeatures)
     #数值型特征
-    numFeatures = NUM_FEATURES
-    print(numFeatures)
+    numeric_features = NUMERIC_FEATURES
+    print(numeric_features)
 
     '''
     类别型变量需要用目标变量的均值进行编码
     '''
-    trainData, encodedFeatures = CategoricalFeatureEncoding.feature_encoding_process(categoricalFeatures, trainData)
+    trainData, encoded_categoricalFeatures = CategoricalFeatureEncoding.feature_encoding_process(categoricalFeatures, trainData)
 
     '''
     对数值型数据的缺失进行补缺
     '''
-    trainData = NumericFeatureEncoding.feature_encoding_process(numFeatures, trainData)
+    trainData = NumericFeatureEncoding.feature_encoding_process(numeric_features, trainData)
 
-    #将从原始类别型特征扩展出来的编码型特征，与数值型特征，合并在一起，作为最终用于模型训练的特征，保存在numFeatures2中
-    numFeatures2 = numFeatures + encodedFeatures
+    #将从原始类别型特征扩展出来的编码型特征，与数值型特征，合并在一起，作为最终用于模型训练的特征
+    final_features = numeric_features + encoded_categoricalFeatures
 
     '''
     第三步：调参
@@ -71,22 +71,23 @@ if __name__ == '__main__':
     此外，调参过程中选择的误差函数是均值误差，5倍折叠
     '''
     #X保存样本特征，y保存样本label
-    X, y = trainData[numFeatures2], trainData['rec_rate']
+    X, y = trainData[final_features], trainData['rec_rate']
 
     #调参
     best_n_estimators, best_max_depth, best_min_samples_leaf,\
-    best_min_samples_split, best_max_features = ParameterAdjust.gridSearchCVParameterAdjust(X, y, numFeatures2)
+    best_min_samples_split, best_max_features = ParameterAdjust.gridSearchCVParameterAdjust(X, y, final_features)
 
     #模型训练
-    cls = RegressionModel.RandomForestRegressorTrain(best_n_estimators,
-                                                     best_max_depth,
-                                                     best_min_samples_leaf,
-                                                     best_min_samples_split,
-                                                     best_max_features,
-                                                     X,
-                                                     y)
+    model = RegressionModel()
+    model.train(best_n_estimators,
+                best_max_depth,
+                best_min_samples_leaf,
+                best_min_samples_split,
+                best_max_features,
+                X,
+                y)
     #模型精确度验证
-    RegressionModel.RandomForestRegressorTrainTest(cls, trainData, numFeatures2)
+    model.predict(trainData, final_features)
 
     '''
     第四步：在测试集上测试效果
@@ -95,9 +96,9 @@ if __name__ == '__main__':
     testData, encodedFeatures = CategoricalFeatureEncoding.feature_encoding_process(categoricalFeatures, testData)
 
     #处理数值型特征
-    testData = NumericFeatureEncoding.feature_encoding_process(numFeatures, testData)
+    testData = NumericFeatureEncoding.feature_encoding_process(final_features, testData)
 
     #使用模型对测试集样本进行预测
-    RegressionModel.RandomForestRegressorTrainTest(cls, testData, numFeatures2)
+    model.RandomForestRegressorTrainTest(testData, final_features)
     print('--还款率预测模型结束执行--')
 
